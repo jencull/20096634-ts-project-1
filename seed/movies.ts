@@ -1,4 +1,4 @@
-import { MovieSource } from '../lambda/shared/types'
+import { MovieSource } from '../shared/types'
 
 export const movies : MovieSource [] = [
   {

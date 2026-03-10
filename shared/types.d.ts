@@ -1,4 +1,4 @@
-// handles the source info for the db
+// handles the source info, the seed movie file, for the db
 export interface MovieSource {
   id: number;
   title: string;
@@ -16,11 +16,11 @@ export interface MovieSource {
   vote_count: number;
 }
 
-// db entity, separates the movie info from the db design
+// db entity, separates the movie info from the pk & sk
 export interface Movie {
-  pk: string;        // "m#movieID e.g. m#848326
-  sk: string;        // m#movieID" e.g m#848326
-  id: number;        // original id 848326
+  pk: string;        // "m#movieID e.g. m#848326 must be a string because of the prefix
+  sk: string;        // m#movieID" e.g m#848326 as above for string
+  id: number;        // original id 848326 from seed file
   title: string;
   date: string;
   overview: string;

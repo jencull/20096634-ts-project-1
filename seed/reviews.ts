@@ -1,4 +1,4 @@
-import { Reviewer, Review } from '../lambda/shared/types';
+import { Reviewer, Review } from '../shared/types';
 
 // reviewers for testing purposes
 export const reviewers: Reviewer[] = [
