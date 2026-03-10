@@ -1,6 +1,6 @@
 *.js
 !jest.config.js
-*.d.ts
+// *.d.ts removed from gitignore so that full project available on github
 node_modules
 
 # CDK asset staging directory
