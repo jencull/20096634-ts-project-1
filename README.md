@@ -8,3 +8,13 @@ This project is a secure, serverless Web API for managing movie reviews, built u
 ## Setup & Deployment
 1. `npm install`
 2. `cdk deploy`
+
+Managing Lambda dependencies with layers
+https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html
+
+Working with lambda layers & nodejs 
+https://docs.aws.amazon.com/lambda/latest/dg/nodejs-layers.html
+
+Creating lambda layers with typescript & CDK
+https://shawntorsitano.com/blog/cdk-lambda-layers/
+

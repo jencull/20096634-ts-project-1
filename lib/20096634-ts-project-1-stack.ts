@@ -1,3 +1,5 @@
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import { MoviesTable } from './constructs/dynamodb-table';
@@ -7,13 +9,27 @@ export class ProjectStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // db
     new MoviesTable(this, 'MovieDatabase');
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, '20096634TsProject1Queue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    // lamda shared layer. command: below transpiles the ts to js because AWS can't read
+    // ts, only js.  esbuild translates the ts to js and bundling packages the new code
+    // in a format that aws accepts.
+    // esbuild https://shawntorsitano.com/blog/cdk-lambda-layers/
+    // bundling https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_lambda_nodejs/README.html
+    const sharedLayer = new lambda.LayerVersion(this, 'SharedLayer', {
+      code: lambda.Code.fromAsset('layers/shared', {
+        bundling: {
+          image: lambda.Runtime.NODEJS_18_X.bundlingImage,
+          command: [
+            'bash', '-c',
+            'mkdir -p /asset-output/nodejs && ' +
+            'cp -r node_modules package.json /asset-output/nodejs/ && ' +
+            'npx esbuild nodejs/utils.ts --bundle --platform=node --outfile=/asset-output/nodejs/utils.js'
+          ],
+        },
+      }),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+    });
   }
 }
