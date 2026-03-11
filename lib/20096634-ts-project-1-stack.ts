@@ -1,8 +1,10 @@
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import { MoviesTable } from './constructs/dynamodb-table';
+import { UserPool } from 'aws-cdk-lib/aws-cognito';
+import { AuthApi } from './constructs/auth-api';
+import { AppApi } from './constructs/app-api';
 
 // called Project Stack because a class can't start with a number
 export class ProjectStack extends cdk.Stack {
@@ -10,7 +12,7 @@ export class ProjectStack extends cdk.Stack {
     super(scope, id, props);
 
     // db
-    new MoviesTable(this, 'MovieDatabase');
+    const moviesTable = new MoviesTable(this, 'MovieDatabase');
 
     // lamda shared layer. command: below transpiles the ts to js because AWS can't read
     // ts, only js.  esbuild translates the ts to js and bundling packages the new code
@@ -31,5 +33,32 @@ export class ProjectStack extends cdk.Stack {
       }),
       compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
     });
+
+    const userPool = new UserPool(this, "UserPool", {
+      signInAliases: { username: true, email: true },
+      selfSignUpEnabled: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    const userPoolId = userPool.userPoolId;
+
+    const appClient = userPool.addClient("AppClient", {
+      authFlows: { userPassword: true },
+    });
+
+    const userPoolClientId = appClient.userPoolClientId;
+
+    new AuthApi(this, 'AuthServiceApi', {
+      userPoolId: userPoolId,
+      userPoolClientId: userPoolClientId,
+      sharedLayer: sharedLayer,
+    });
+
+    new AppApi(this, 'AppApi', {
+      userPoolId: userPoolId,
+      userPoolClientId: userPoolClientId,
+      sharedLayer: sharedLayer,
+      moviesTable: moviesTable.table,
+    } );
   }
 }

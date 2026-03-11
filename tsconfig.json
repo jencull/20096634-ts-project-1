@@ -3,9 +3,18 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "lib": [
       "es2022"
     ],
+    "baseUrl": ".",
+    "paths": {
+      "/opt/nodejs/utils": ["layers/shared/nodejs/utils.ts"],
+      "/opt/nodejs/types": ["layers/shared/nodejs/types.ts"],
+      "/opt/nodejs/types.schema.json": ["layers/shared/nodejs/types.schema.json"]
+    },
+    "resolveJsonModule": true,
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,

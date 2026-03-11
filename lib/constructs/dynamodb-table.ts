@@ -3,16 +3,16 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as custom from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { generateBatch, transformMovie } from '../../shared/utils';
-import { Movie } from '../../shared/types';
 import * as moviesData from '../../seed/movies';
 import * as reviewsData from '../../seed/reviews';
 
 export class MoviesTable extends Construct {
+    public readonly table: dynamodb.Table;
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id);
 
         // single table definition
-        const moviesTable = new dynamodb.Table(this, "MoviesTable", {
+        this.table = new dynamodb.Table(this, "MoviesTable", {
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             partitionKey: { name: "pk", type: dynamodb.AttributeType.STRING },
             sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
@@ -21,7 +21,7 @@ export class MoviesTable extends Construct {
         });
 
         // local secondary index (LSI) for date-based searching
-        moviesTable.addLocalSecondaryIndex({
+        this.table.addLocalSecondaryIndex({
             indexName: "reviewDateIx",
             sortKey: { name: "date", type: dynamodb.AttributeType.STRING },
         });
@@ -32,7 +32,7 @@ export class MoviesTable extends Construct {
                 action: "batchWriteItem",
                 parameters: {
                     RequestItems: {
-                        [moviesTable.tableName]: [
+                        [this.table.tableName]: [
                             // transforms movies into movie entities, creates a list of PUT requests
                             ...generateBatch(moviesData.movies.map(transformMovie)),
                             // add reviews, creates list
@@ -45,7 +45,7 @@ export class MoviesTable extends Construct {
                 physicalResourceId: custom.PhysicalResourceId.of("moviesddbInitData"),
             },
             policy: custom.AwsCustomResourcePolicy.fromSdkCalls({
-                resources: [moviesTable.tableArn],
+                resources: [this.table.tableArn],
             }),
         });
     }
