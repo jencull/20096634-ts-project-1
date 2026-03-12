@@ -37,8 +37,43 @@ added 'as JwtToken' to end of return statement to enforce strict typing, resolve
 ProjectStack troubleshooting: 
 
 Students laptop uses podman, not Docker. Run below in terminal window: 
-export CDK_DOCKER=podman
+
+In order to deploy to AWS with podman run
+CDK_DOCKER=podman npx cdk deploy
+
+export CDK_DOCKER=podman (works for npx cdk synth)
 
 npx cdk synth - builds project locally without sending anything to AWS. Very valuable tool for troubleshooting. 
 
 Restart TS server - sync changes eg changes in paths, installing new packages. 
+
+Testing auth lambdas
+
+Signup, use AuthServiceApiEndpoint, POST - working
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signup
+body (raw)
+{
+    "username": "userA",
+    "password": "passwA!1",
+    "email": "your_verified_email_identity"
+}
+
+Confirm signup, AuthServiceApiEndpoint, POST - working
+https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/confirm-signup
+
+{
+    "username": "userA",
+    "code": "your_verification_code"
+}
+
+Signin, AuthServiceApiEndpoint, POST - working
+https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signin
+
+{
+  "username": "userA",
+  "password": "passwA!1"
+}
+
+Signout, AuthServiceApiEndpoint, GET - working
+https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signout
+
