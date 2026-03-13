@@ -77,3 +77,33 @@ https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signin
 Signout, AuthServiceApiEndpoint, GET - working
 https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signout
 
+Testing app lambdas
+
+Get all reviews for a movie (public) - app api endpoint
+https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
+
+Get all reviews for a specific movie for 2024 or 2024-03 or 2-24-02-10 - app api endpoint
+https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/reviews?movie=572802&published=2024
+returns error if either movieID or date is missing. 
+
+Add review - POST - app api endpoint
+https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/movies/reviews
+1. sign into app using auth api url
+2. copy cookie
+3. paste cookie into header of POST request for review Postman-Token, Host & Cookie options selected
+Body
+{
+  "movieID": 848326,
+  "date": "2026-03-13",
+  "text": "I am testing my add review function!"
+}
+
+Update review - PUT - app api url
+https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
+Same requirements as above, postman-token, host and cookie
+{
+  "movieID": 848326,
+  "date": "2026-03-13",
+  "text": "I am testing my add review function! Now I am testing my update function"
+}
+

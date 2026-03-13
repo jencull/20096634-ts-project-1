@@ -1,4 +1,3 @@
-import { Aws } from "aws-cdk-lib";
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as apig from "aws-cdk-lib/aws-apigateway";
@@ -62,21 +61,27 @@ export class AppApi extends Construct {
         });
 
         // movie functions
+
+        // GET /movies/{movieID}/reviews - public 
+        // Get all reviews for a specific movie or a single review by a specific user
         const getMovieReviewsFn = new node.NodejsFunction(this, "GetMovieReviewsFn", {
             ...appCommonFnProps,
             entry: `${__dirname}/../../lambda/movies/getMovieReviews.ts`,
         });
-
+        // POST /movies/reviews - Protected
+        // Allows an authenticated user to create a new review
         const addReviewFn = new node.NodejsFunction(this, "AddReviewFn", {
             ...appCommonFnProps,
             entry: `${__dirname}/../../lambda/movies/addReview.ts`,
         });
-
+        // PUT /movies/{movieID}/reviews - protected
+        // Allows an authenticated user to update their existing review text or date
         const updateReviewFn = new node.NodejsFunction(this, "UpdateReviewFn", {
             ...appCommonFnProps,
             entry: `${__dirname}/../../lambda/movies/updateReview.ts`,
         });
-
+        // GET /reviews - public
+        // Search for reviews by movie and date, uses LSI
         const getFilteredReviewsFn = new node.NodejsFunction(this, "GetFilteredReviewsFn", {
             ...appCommonFnProps,
             entry: `${__dirname}/../../lambda/movies/getFilteredReviews.ts`,
@@ -92,7 +97,7 @@ export class AppApi extends Construct {
         const movies = appApi.root.addResource("movies");
         const movie = movies.addResource("{movieID}");
                 
-        
+        // GET /reviews?movie=ID&published=YEAR - public
         const filteredReviews = appApi.root.addResource("reviews");
         filteredReviews.addMethod("GET", new apig.LambdaIntegration(getFilteredReviewsFn));
 
