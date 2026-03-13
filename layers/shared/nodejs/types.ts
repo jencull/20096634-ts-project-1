@@ -29,15 +29,17 @@ export interface Movie {
 export interface Reviewer {
     pk: string;        // r#username e.g. r#UserA
     sk: string;        // r#username e.g., r#UserA
+    reviewerID: string; // username
     name: string;      // Real name of the user
 }
 
 export interface Review {
     pk: string;        // movie m#movieID
-    sk: string;        // reviewer r#username
+    sk: string;
+    movieID: number;
+    reviewerID: string;
     date: string;      // review publish date
     text: string;      // review content
-    reviewerName?: string; // Optional
 }
 
 export type SignUpBody = {

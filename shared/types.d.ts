@@ -35,7 +35,8 @@ export interface Reviewer {
 export interface Review {
   pk: string;        // movie m#movieID
   sk: string;        // reviewer r#username
+  movieID: number,
+  reviewerID: string,
   date: string;      // review publish date
   text: string;      // review content
-  reviewerName?: string; // Optional
 }

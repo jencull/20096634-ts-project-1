@@ -31,6 +31,9 @@ export class AppApi extends Construct {
                 REGION: cdk.Aws.REGION,
                 TABLE_NAME: props.moviesTable.tableName,
             },
+            bundling: {
+                externalModules: ["/opt/nodejs/types"],
+            },
         };
 
         // authorizer function
@@ -74,17 +77,33 @@ export class AppApi extends Construct {
             entry: `${__dirname}/../../lambda/movies/updateReview.ts`,
         });
 
+        const getFilteredReviewsFn = new node.NodejsFunction(this, "GetFilteredReviewsFn", {
+            ...appCommonFnProps,
+            entry: `${__dirname}/../../lambda/movies/getFilteredReviews.ts`,
+        });
+
         // permisions
         props.moviesTable.grantReadData(getMovieReviewsFn);
         props.moviesTable.grantReadWriteData(addReviewFn);
+        props.moviesTable.grantReadWriteData(updateReviewFn);
+        props.moviesTable.grantReadData(getFilteredReviewsFn);
 
         // routes
         const movies = appApi.root.addResource("movies");
         const movie = movies.addResource("{movieID}");
-        const reviews = movie.addResource("reviews");
+                
+        
+        const filteredReviews = appApi.root.addResource("reviews");
+        filteredReviews.addMethod("GET", new apig.LambdaIntegration(getFilteredReviewsFn));
 
+        const reviews = movie.addResource("reviews");
         // GET /movies/{movieID}/reviews - public
         reviews.addMethod("GET", new apig.LambdaIntegration(getMovieReviewsFn));
+        // PUT /movies/{movieID}/reviews - protected - requires login
+        reviews.addMethod("PUT", new apig.LambdaIntegration(updateReviewFn), {
+            authorizer: requestAuthorizer,
+            authorizationType: apig.AuthorizationType.CUSTOM,
+        });
 
         // POST /movies/reviews - protected - requires login
         // Project spec says POST /movies/reviews so add it to movie resource
