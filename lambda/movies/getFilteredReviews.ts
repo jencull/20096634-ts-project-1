@@ -24,10 +24,12 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 body: JSON.stringify({ message: "Missing movieID or date published info" }),
             };
         }
-        // Using aliases to avoid ddb reserved word errors (date)
+        // Using aliases to avoid ddb reserved words (date)
+        // begins_with here returns the info based on the partial match outlined in the project spec 1995-05
+        // but will also return info if just the year or the full date is put in
         const commandInput: QueryCommandInput = {
             TableName: process.env.TABLE_NAME,
-            IndexName: "reviewDateIx", // instruction to check LSI for date
+            IndexName: "reviewDateIx", // check LSI for date
             KeyConditionExpression: "pk = :movieID and begins_with(#reviewDate, :dateValue)",
             ExpressionAttributeNames: {
                 "#reviewDate": "date",

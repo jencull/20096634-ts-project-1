@@ -9,3 +9,9 @@ cdk.out
 
 .DS_Store
 *.schema.json
+
+# dependency dirs
+node_modules/
+layers/shared/.npm/
+_cacache/
+*.log

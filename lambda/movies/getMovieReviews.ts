@@ -42,7 +42,10 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 },
             };
         // ELSE (where username is not included in search) return all reviews for that movie
-        // Making :reviewer just r#, the begins_with finds every review record for that movie
+        // begins_with(sk, "r#") ensures we only fetch Review items
+        // search the movie partition with m# for the movie but ignore the rest of the details 
+        // and only look for what beging with r#, the review prefix
+        // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.KeyConditionExpressions.html
         } else {
             commandInput = {
                 ...commandInput,

@@ -60,6 +60,27 @@ export class AppApi extends Construct {
             },
         });
 
+        // API gateway validation
+        const requestValidator = new apig.RequestValidator(this, "ApiValidator", {
+            restApi: appApi,
+            validateRequestBody: true,
+            validateRequestParameters: false,
+        });
+
+        const reviewModel = new apig.Model(this, "ReviewModel", {
+            restApi: appApi,
+            contentType: "application/json",
+            schema: {
+                type: apig.JsonSchemaType.OBJECT,
+                required: ["movieID", "date", "text"],
+                properties: {
+                    movieID: { type: apig.JsonSchemaType.NUMBER },
+                    date: { type: apig.JsonSchemaType.STRING },
+                    text: { type: apig.JsonSchemaType.STRING, minLength: 1 }
+                },
+            },
+        });
+
         // movie functions
 
         // GET /movies/{movieID}/reviews - public 
@@ -96,7 +117,7 @@ export class AppApi extends Construct {
         // routes
         const movies = appApi.root.addResource("movies");
         const movie = movies.addResource("{movieID}");
-                
+
         // GET /reviews?movie=ID&published=YEAR - public
         const filteredReviews = appApi.root.addResource("reviews");
         filteredReviews.addMethod("GET", new apig.LambdaIntegration(getFilteredReviewsFn));
@@ -108,6 +129,11 @@ export class AppApi extends Construct {
         reviews.addMethod("PUT", new apig.LambdaIntegration(updateReviewFn), {
             authorizer: requestAuthorizer,
             authorizationType: apig.AuthorizationType.CUSTOM,
+            // api gateway validation
+            requestValidator: requestValidator,
+            requestModels: {
+                "application/json": reviewModel,
+            },
         });
 
         // POST /movies/reviews - protected - requires login
@@ -116,6 +142,10 @@ export class AppApi extends Construct {
         allReviews.addMethod("POST", new apig.LambdaIntegration(addReviewFn), {
             authorizer: requestAuthorizer,
             authorizationType: apig.AuthorizationType.CUSTOM,
+            requestValidator: requestValidator,
+            requestModels: {
+                "application/json": reviewModel,
+            },
         });
     }
 }
