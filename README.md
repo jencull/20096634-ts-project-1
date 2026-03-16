@@ -3,7 +3,7 @@
 **Student ID:** 20096634
 
 ## Project Overview
-This project is a secure, serverless Web API for managing movie reviews, built using AWS CDK, DynamoDB (Single Table Design), and Cognito for authentication. The project is hosted on AWS and juses the CDK to automate its infrastructure provisioning. 
+This project is a secure, serverless Web API for managing movie reviews, built using AWS CDK, DynamoDB (Single Table Design), and Cognito for authentication. The project is hosted on AWS and uses the CDK to automate its infrastructure provisioning. 
 
 ## Setup & Deployment
 1. `npm install`
@@ -122,3 +122,43 @@ https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.RequestVa
 Response validation not implemented as it adds latency and would not work for the performace aspect outlined in the project spec. In a production system it should be implemented as it helps prevent data leaks.
 
 https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.Model.html
+
+Testing API Gateway valdiation
+
+Signin - fails, as expected 
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signin
+{
+  "email": "userA", // key should be username
+  "password": "passwA!1" 
+}
+
+Signup - fails, as expected
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signup
+{
+    "username": "userC",
+    "password": "1234" // pw has to be > 8 char
+}
+
+add review - fails, as expected
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/reviews
+Need Cookie, 
+{
+    "movieID": 91011, // invalid id
+    "date": "2024-03-16",
+    "text": "Great scenery"
+}
+
+update review - fails as expected
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/notanumber/reviews //invalid movie id in url
+{
+    "movieID": 848326,
+    "date": "2024-03-16",
+    "text": "Great scenery."
+}
+and this one, to test the min 1 char for review
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
+{
+    "movieID": 848326,
+    "date": "2024-03-16",
+    "text": ""
+}

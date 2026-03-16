@@ -43,16 +43,32 @@ export class AuthApi extends Construct {
       validateRequestParameters: false,
     });
 
-    // Validator model for signup and signin
-    const authModel = new apig.Model(this, "AuthModel", {
+    // Validator model for signup
+    const signupModel = new apig.Model(this, "SignupModel", {
       restApi: api,
       contentType: "application/json",
       schema: {
         type: apig.JsonSchemaType.OBJECT,
-        // email and password must be present
-        required: ["email", "password"],
+        // must have username, password and email address
+        required: ["username", "password", "email"],
         properties: {
-          email: { type: apig.JsonSchemaType.STRING }, //  string - will be checked by validator
+          username: { type: apig.JsonSchemaType.STRING },
+          password: { type: apig.JsonSchemaType.STRING, minLength: 8 },
+          email: { type: apig.JsonSchemaType.STRING }
+        },
+      },
+    });
+
+    // Validator model for signin
+    const signinModel = new apig.Model(this, "AuthModel", {
+      restApi: api,
+      contentType: "application/json",
+      schema: {
+        type: apig.JsonSchemaType.OBJECT,
+        // username and password must be present
+        required: ["username", "password"],
+        properties: {
+          username: { type: apig.JsonSchemaType.STRING }, //  string - will be checked by validator
           password: { type: apig.JsonSchemaType.STRING, minLength: 8 } // string with min 8 chars will be checked by validator
         },
       },
@@ -64,9 +80,9 @@ export class AuthApi extends Construct {
       contentType: "application/json",
       schema: {
         type: apig.JsonSchemaType.OBJECT,
-        required: ["email", "code"],
+        required: ["username", "code"],
         properties: {
-          email: { type: apig.JsonSchemaType.STRING },
+          username: { type: apig.JsonSchemaType.STRING },
           // length for cognito code from the email confirmation, will strip leading 0's if set to number
           code: { type: apig.JsonSchemaType.STRING, minLength: 6 }
         },
@@ -76,9 +92,9 @@ export class AuthApi extends Construct {
     this.auth = api.root.addResource("auth");
 
     // routes with validation applied to POST
-    this.addAuthRoute("signup", "POST", "SignupFn", "signup.ts", requestValidator, authModel);
+    this.addAuthRoute("signup", "POST", "SignupFn", "signup.ts", requestValidator, signupModel);
     this.addAuthRoute("confirm-signup", "POST", "ConfirmFn", "confirm-signup.ts", requestValidator, confirmModel);
-    this.addAuthRoute("signin", "POST", "SigninFn", "signin.ts", requestValidator, authModel);
+    this.addAuthRoute("signin", "POST", "SigninFn", "signin.ts", requestValidator, signinModel);
     // signout is a GET, no validation
     this.addAuthRoute("signout", "GET", "SignoutFn", "signout.ts");
   }
