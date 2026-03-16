@@ -1,17 +1,19 @@
 *.js
 !jest.config.js
-// *.d.ts removed from gitignore so that full project available on github
-node_modules
+# *.d.ts removed from gitignore so that full project available on github
 
 # CDK asset staging directory
 .cdk.staging
 cdk.out
 
+# OS files
 .DS_Store
+
+# Schema files
 *.schema.json
 
-# dependency dirs
-node_modules/
+# dependency & cache dirs
+**/node_modules/
 layers/shared/.npm/
 _cacache/
 *.log

@@ -80,14 +80,14 @@ https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/prod/auth/signout
 Testing app api lambdas
 
 Get all reviews for a movie (public) - app api endpoint - working
-https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
 
 Get all reviews for a specific movie for 2024 or 2024-03 or 2-24-02-10 - app api endpoint - working
-https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/reviews?movie=572802&published=2024
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/reviews?movie=572802&published=2024
 returns error if either movieID or date is missing. 
 
 Add review - POST - app api endpoint - working
-https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/movies/reviews
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/reviews
 1. sign into app using auth api url
 2. copy cookie
 3. paste cookie into header of POST request for review Postman-Token, Host & Cookie options selected
@@ -99,7 +99,7 @@ Body
 }
 
 Update review - PUT - app api url - working
-https://rbe8z09ctb.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
+https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
 Same requirements as above, postman-token, host and cookie
 {
   "movieID": 848326,
@@ -107,3 +107,18 @@ Same requirements as above, postman-token, host and cookie
   "text": "I am testing my add review function! Now I am testing my update function"
 }
 
+API Validation
+
+Request validation :
+1. performance improvement, info checks done before reaching lambda and user advised of error sooner
+2. reduces costs as lamdba not invoked if there is an error.
+
+https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-validation-set-up.html
+https://docs.aws.amazon.com/apigateway/latest/api/API_RequestValidator.html
+https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.Model.html
+https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.RequestValidator.html
+
+
+Response validation not implemented as it adds latency and would not work for the performace aspect outlined in the project spec. In a production system it should be implemented as it helps prevent data leaks.
+
+https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.Model.html

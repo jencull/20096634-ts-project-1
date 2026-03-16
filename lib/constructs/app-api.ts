@@ -61,22 +61,30 @@ export class AppApi extends Construct {
         });
 
         // API gateway validation
+
+        // Request validator
+        // works on entry point to check info is correct before lambda invoked
+        // if error is caught the lambda won't run, saves unnecessary costs
         const requestValidator = new apig.RequestValidator(this, "ApiValidator", {
             restApi: appApi,
+            // check body of request
             validateRequestBody: true,
+            // not checking query params as validated in methods, more control over error messages
             validateRequestParameters: false,
         });
 
+        // definition for incoming data (the model)
         const reviewModel = new apig.Model(this, "ReviewModel", {
             restApi: appApi,
             contentType: "application/json",
             schema: {
                 type: apig.JsonSchemaType.OBJECT,
+                // these items must be present
                 required: ["movieID", "date", "text"],
                 properties: {
-                    movieID: { type: apig.JsonSchemaType.NUMBER },
-                    date: { type: apig.JsonSchemaType.STRING },
-                    text: { type: apig.JsonSchemaType.STRING, minLength: 1 }
+                    movieID: { type: apig.JsonSchemaType.NUMBER }, // numeric id
+                    date: { type: apig.JsonSchemaType.STRING }, // string
+                    text: { type: apig.JsonSchemaType.STRING, minLength: 1 } // string, can't be empty
                 },
             },
         });
@@ -129,7 +137,7 @@ export class AppApi extends Construct {
         reviews.addMethod("PUT", new apig.LambdaIntegration(updateReviewFn), {
             authorizer: requestAuthorizer,
             authorizationType: apig.AuthorizationType.CUSTOM,
-            // api gateway validation
+            // api gateway request validation
             requestValidator: requestValidator,
             requestModels: {
                 "application/json": reviewModel,
@@ -142,6 +150,7 @@ export class AppApi extends Construct {
         allReviews.addMethod("POST", new apig.LambdaIntegration(addReviewFn), {
             authorizer: requestAuthorizer,
             authorizationType: apig.AuthorizationType.CUSTOM,
+            // api gateway request validation
             requestValidator: requestValidator,
             requestModels: {
                 "application/json": reviewModel,
