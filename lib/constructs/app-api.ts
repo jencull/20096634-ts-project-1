@@ -60,6 +60,21 @@ export class AppApi extends Construct {
             },
         });
 
+        // Used this because the API gateway validation wasn't working on addReview
+        // and updateReview. The only info being returned was "Invalid request body"
+        // This gave more info which turned out to be 'unable to parse body as json'
+        // In the end the fix was to use the Content-Length option in header info.
+        appApi.addGatewayResponse("BadRequestBody", {
+            type: apig.ResponseType.BAD_REQUEST_BODY,
+            statusCode: "400",
+            responseHeaders: {
+                "Access-Control-Allow-Origin": "'*'",
+            },
+            templates: {
+                "application/json": '{"message": "Invalid request body", "validationError": "$context.error.validationErrorString"}',
+            },
+        });
+
         // API gateway validation
 
         // Request validator
@@ -74,7 +89,7 @@ export class AppApi extends Construct {
         });
 
         // definition for incoming data (the model)
-        const reviewModel = new apig.Model(this, "ReviewModel", {
+        const addReviewModel = new apig.Model(this, "AddReviewModel", {
             restApi: appApi,
             contentType: "application/json",
             schema: {
@@ -82,9 +97,24 @@ export class AppApi extends Construct {
                 // these items must be present
                 required: ["movieID", "date", "text"],
                 properties: {
-                    movieID: { type: apig.JsonSchemaType.NUMBER }, // numeric id
+                    movieID: { type: apig.JsonSchemaType.NUMBER },
                     date: { type: apig.JsonSchemaType.STRING }, // string
-                    text: { type: apig.JsonSchemaType.STRING, minLength: 1 } // string, can't be empty
+                    text: { type: apig.JsonSchemaType.STRING, minLength: 1 }
+                },
+            },
+        });
+
+        // definition for incoming data (the model)
+        const updateReviewModel = new apig.Model(this, "UpdateReviewModel", {
+            restApi: appApi,
+            contentType: "application/json",
+            schema: {
+                type: apig.JsonSchemaType.OBJECT,
+                // these items must be present
+                required: ["date", "text"],
+                properties: {
+                    date: { type: apig.JsonSchemaType.STRING }, // string
+                    text: { type: apig.JsonSchemaType.STRING, minLength: 1 }
                 },
             },
         });
@@ -119,30 +149,15 @@ export class AppApi extends Construct {
         // permisions
         props.moviesTable.grantReadData(getMovieReviewsFn);
         props.moviesTable.grantReadWriteData(addReviewFn);
-        props.moviesTable.grantReadWriteData(updateReviewFn);
+        props.moviesTable.grantWriteData(updateReviewFn);
         props.moviesTable.grantReadData(getFilteredReviewsFn);
 
         // routes
         const movies = appApi.root.addResource("movies");
-        const movie = movies.addResource("{movieID}");
 
         // GET /reviews?movie=ID&published=YEAR - public
         const filteredReviews = appApi.root.addResource("reviews");
         filteredReviews.addMethod("GET", new apig.LambdaIntegration(getFilteredReviewsFn));
-
-        const reviews = movie.addResource("reviews");
-        // GET /movies/{movieID}/reviews - public
-        reviews.addMethod("GET", new apig.LambdaIntegration(getMovieReviewsFn));
-        // PUT /movies/{movieID}/reviews - protected - requires login
-        reviews.addMethod("PUT", new apig.LambdaIntegration(updateReviewFn), {
-            authorizer: requestAuthorizer,
-            authorizationType: apig.AuthorizationType.CUSTOM,
-            // api gateway request validation
-            requestValidator: requestValidator,
-            requestModels: {
-                "application/json": reviewModel,
-            },
-        });
 
         // POST /movies/reviews - protected - requires login
         // Project spec says POST /movies/reviews so add it to movie resource
@@ -153,7 +168,23 @@ export class AppApi extends Construct {
             // api gateway request validation
             requestValidator: requestValidator,
             requestModels: {
-                "application/json": reviewModel,
+            "application/json": addReviewModel,
+         },
+        });
+
+        const movie = movies.addResource("{movieID}");
+        const reviews = movie.addResource("reviews");
+
+        // GET /movies/{movieID}/reviews - public
+        reviews.addMethod("GET", new apig.LambdaIntegration(getMovieReviewsFn));
+        // PUT /movies/{movieID}/reviews - protected - requires login
+        reviews.addMethod("PUT", new apig.LambdaIntegration(updateReviewFn), {
+            authorizer: requestAuthorizer,
+            authorizationType: apig.AuthorizationType.CUSTOM,
+            // api gateway request validation
+            requestValidator: requestValidator,
+            requestModels: {
+                "application/json": updateReviewModel,
             },
         });
     }

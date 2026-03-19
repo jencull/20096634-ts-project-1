@@ -4,6 +4,7 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import Ajv from "ajv";
 import schema from "/opt/nodejs/types.schema.json";
 import { Review } from "/opt/nodejs/types";
+import { parseCookies, verifyToken } from "/opt/nodejs/utils";
 
 const ajv = new Ajv();
 const isValidReviewPayload = ajv.compile<Review>(schema.definitions["Review"] || {});
@@ -17,6 +18,10 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         // Get movieID from the path {movieID}
         const movieID = event.pathParameters?.movieID;
 
+        // Setup cookies and cookies
+        const cookies = parseCookies(event);
+        const token = cookies?.token;
+
         if (!body || !movieID) {
             return {
                 statusCode: 400,
@@ -25,10 +30,29 @@ export const handler: APIGatewayProxyHandler = async (event) => {
             };
         }
 
-        // pulls the identity of the user from the authorizer
-        const authenticatedUser = event.requestContext.authorizer?.principalId;
-        body.reviewerID = authenticatedUser;
+        // Check token exists
+        if (!token) {
+            return {
+                statusCode: 401,
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ message: "Login required" }),
+            };
+        }
+
+        // verify token and get username for updating a review
+        const decoded: any = await verifyToken(
+            token,
+            process.env.USER_POOL_ID!,
+            process.env.REGION!
+        );
+
+        const username = decoded["cognito:username"];
+
+        // add extra info for ajv validation
+        body.reviewerID = username;
         body.movieID = Number(movieID);
+        body.pk = `m#${movieID}`;
+        body.sk = `r#${username}`;
 
         if (!isValidReviewPayload(body)) {
             return {
@@ -45,7 +69,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
             TableName: process.env.TABLE_NAME,
             Key: {
                 pk: `m#${movieID}`,
-                sk: `r#${authenticatedUser}`,
+                sk: `r#${username}`,
             },
             // Using aliases to avoid ddb reserved word errors (date, text)
             UpdateExpression: "set #text = :text, #reviewDate = :date",

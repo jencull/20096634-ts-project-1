@@ -43,6 +43,7 @@ CDK_DOCKER=podman npx cdk deploy
 
 export CDK_DOCKER=podman (works for npx cdk synth)
 
+
 npx cdk synth - builds project locally without sending anything to AWS. Very valuable tool for troubleshooting. 
 
 Restart TS server - sync changes eg changes in paths, installing new packages. 
@@ -162,3 +163,6 @@ https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
     "date": "2024-03-16",
     "text": ""
 }
+
+In order for API gateway validation to work on addReview and updateReview have to use the Content-Length option in header info. 
+
