@@ -41,7 +41,16 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         };
 
         const commandOutput = await ddbDocClient.send(new QueryCommand(commandInput));
-        const reviews = commandOutput.Items as Review[];
+        const items = commandOutput.Items || [];
+
+        // removes the pk and sk so that they aren't displayed to the end user
+        // guide: https://github.com/jencull/ds-ts-lab/blob/main/src/02-functions.ts#L69
+        const reviews = items.map((item) => ({
+            movieID: item.movieID,
+            reviewerID: item.reviewerID,
+            date: item.date,
+            text: item.text
+        }));
 
         return {
             statusCode: 200,
