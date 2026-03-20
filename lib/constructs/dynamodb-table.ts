@@ -18,6 +18,8 @@ export class MoviesTable extends Construct {
             sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
             removalPolicy: cdk.RemovalPolicy.DESTROY,
             tableName: "Movies",
+            // point in time recovery, automatically sets to 35 days
+            pointInTimeRecovery: true,
         });
 
         // local secondary index (LSI) for date-based searching

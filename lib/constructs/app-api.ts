@@ -63,7 +63,7 @@ export class AppApi extends Construct {
         // Used this because the API gateway validation wasn't working on addReview
         // and updateReview. The only info being returned was "Invalid request body"
         // This gave more info which turned out to be 'unable to parse body as json'
-        // In the end the fix was to use the Content-Length option in header info.
+        // In the end the fix was to use the Content-Length option in header info in Postman.
         appApi.addGatewayResponse("BadRequestBody", {
             type: apig.ResponseType.BAD_REQUEST_BODY,
             statusCode: "400",
@@ -88,7 +88,7 @@ export class AppApi extends Construct {
             validateRequestParameters: false,
         });
 
-        // definition for incoming data (the model)
+        // definition for incoming data for addReview
         const addReviewModel = new apig.Model(this, "AddReviewModel", {
             restApi: appApi,
             contentType: "application/json",
@@ -104,7 +104,7 @@ export class AppApi extends Construct {
             },
         });
 
-        // definition for incoming data (the model)
+        // definition for incoming data for updateReview
         const updateReviewModel = new apig.Model(this, "UpdateReviewModel", {
             restApi: appApi,
             contentType: "application/json",

@@ -2,12 +2,45 @@
 **Student Name:** Jennefer Cullinan
 **Student ID:** 20096634
 
-## Project Overview
-This project is a secure, serverless Web API for managing movie reviews, built using AWS CDK, DynamoDB (Single Table Design), and Cognito for authentication. The project is hosted on AWS and uses the CDK to automate its infrastructure provisioning. 
+__Name:__ ....your name .....
 
-## Setup & Deployment
-1. `npm install`
-2. `cdk deploy`
+__Demo:__ ... link to your YouTube video demonstration ......
+
+### Links.
+__Demo:__ A link to your YouTube video demonstration.]
+
+### Screenshots.
+
+[ A screenshot of the App Web API from the API Gateway management console, e.g.
+
+![][api]
+
+Note: The Auth API is not required.
+]
+
+[A screenshot of your seeded table from DynamoDB, e.g.
+
+![][db]
+]
+
+###  Implementation Highlights (If relevant).
+
+Briefly explain any non-standard features of your implementation, including (if relevant):
+
++ Restricted Review Update.
++ Dynamo LSI. 
++ API Gateway validation.
++ Other.
+
+###  Extra (If relevant).
+
+[ State any other aspects of your solution that use CDK/serverless features not covered in the lectures ]
+
+[api]: ./images/api1.png
+[db]: ./images/db.png
+
+
+Students notes and links/references. 
 
 Managing Lambda dependencies with layers
 https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html
@@ -19,7 +52,6 @@ Creating lambda layers with typescript & CDK
 https://shawntorsitano.com/blog/cdk-lambda-layers/
 
 Problems & Troubleshooting auth app stack in Cognito demo app. Changes carried over to this project.
-
 
 tsconfig.json all changes commented in file
 https://github.com/jencull/cognito-demo-app/blob/master/tsconfig.json
@@ -44,7 +76,7 @@ CDK_DOCKER=podman npx cdk deploy
 export CDK_DOCKER=podman (works for npx cdk synth)
 
 
-npx cdk synth - builds project locally without sending anything to AWS. Very valuable tool for troubleshooting. 
+npx cdk synth - builds project locally without sending anything to AWS. Very handy tool for troubleshooting. 
 
 Restart TS server - sync changes eg changes in paths, installing new packages. 
 
@@ -92,6 +124,7 @@ https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/reviews
 1. sign into app using auth api url
 2. copy cookie
 3. paste cookie into header of POST request for review Postman-Token, Host & Cookie options selected
+4. 19th March - need Content-Length in header also when using API Gateway Validation
 Body
 {
   "movieID": 848326,
@@ -165,4 +198,6 @@ https://xxxxxx.execute-api.eu-west-1.amazonaws.com/prod/movies/848326/reviews
 }
 
 In order for API gateway validation to work on addReview and updateReview have to use the Content-Length option in header info. 
+
+return info for reviews was 'cleaned' to not show the pk & sk. 
 
