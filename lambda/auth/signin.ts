@@ -68,8 +68,9 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         return {
             statusCode: 200,
             headers: {
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Origin": "*",
+                // adapted for assignment 2
+                "Access-Control-Allow-Headers": "Content-Type,Authorization",
+                "Access-Control-Allow-Origin": "http://localhost:3000",
                 "Set-Cookie": `token=${token}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=3600;`,
             },
             body: JSON.stringify({

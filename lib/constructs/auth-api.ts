@@ -28,7 +28,11 @@ export class AuthApi extends Construct {
       description: "Authentication Service RestApi",
       endpointTypes: [apig.EndpointType.REGIONAL],
       defaultCorsPreflightOptions: {
-        allowOrigins: apig.Cors.ALL_ORIGINS,
+        // adapted for assignment 2
+        allowOrigins: ["http://localhost:3000"],
+        allowCredentials: true,
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: apig.Cors.ALL_METHODS,
       },
     });
 

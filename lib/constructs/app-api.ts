@@ -45,7 +45,8 @@ export class AppApi extends Construct {
             this,
             "RequestAuthorizer",
             {
-                identitySources: [apig.IdentitySource.header("cookie")],
+                // adapted for assignment 2
+                identitySources: [apig.IdentitySource.header("Authorization")],
                 handler: authorizerFn,
                 resultsCacheTtl: cdk.Duration.minutes(0),
             }
@@ -55,8 +56,24 @@ export class AppApi extends Construct {
         const appApi = new apig.RestApi(this, "AppApi", {
             description: "Movie Review App API",
             endpointTypes: [apig.EndpointType.REGIONAL],
+            // give CloudWatch permission for detailed logging/tracing for API Gateway
+            cloudWatchRole: true,
             defaultCorsPreflightOptions: {
-                allowOrigins: apig.Cors.ALL_ORIGINS,
+                // adapted for assignment 2
+                allowOrigins: ["http://localhost:3000"],
+                allowCredentials: true,
+                allowHeaders: ["Content-Type", "Authorization"],
+                allowMethods: apig.Cors.ALL_METHODS,
+            },
+            deployOptions: {
+                loggingLevel: apig.MethodLoggingLevel.INFO,
+                dataTraceEnabled: true,
+                // enables AWS X-ray for tracing api requests from api gateway to request completion
+                // logs are sent to CloudWatch and include info such as ip address and latency
+                tracingEnabled: true, 
+                // Rate limiting, prevents DDoS attacks and saves costs
+                throttlingBurstLimit: 10, // max no of requests at once
+                throttlingRateLimit: 5, // avg no of requests allowed per second
             },
         });
 
@@ -68,7 +85,8 @@ export class AppApi extends Construct {
             type: apig.ResponseType.BAD_REQUEST_BODY,
             statusCode: "400",
             responseHeaders: {
-                "Access-Control-Allow-Origin": "'*'",
+                // adapted for assignment 2
+                "Access-Control-Allow-Origin": "'http://localhost:3000'",
             },
             templates: {
                 "application/json": '{"message": "Invalid request body", "validationError": "$context.error.validationErrorString"}',
@@ -168,8 +186,8 @@ export class AppApi extends Construct {
             // api gateway request validation
             requestValidator: requestValidator,
             requestModels: {
-            "application/json": addReviewModel,
-         },
+                "application/json": addReviewModel,
+            },
         });
 
         const movie = movies.addResource("{movieID}");
