@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import Ajv from "ajv";
 import schema from "/opt/nodejs/types.schema.json";
 import { Review } from "/opt/nodejs/types";
-import { parseCookies, verifyToken } from "/opt/nodejs/utils";
+import { verifyToken } from "/opt/nodejs/utils";
 
 const ajv = new Ajv();
 const isValidReviewPayload = ajv.compile<Review>(schema.definitions["Review"] || {});
@@ -14,18 +14,18 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     try {
         console.log("[EVENT]", JSON.stringify(event));
         const body = event.body ? JSON.parse(event.body) : undefined;
-        
+
         // Get movieID from the path {movieID}
         const movieID = event.pathParameters?.movieID;
 
-        // Setup cookies and cookies
-        const cookies = parseCookies(event);
-        const token = cookies?.token;
+        // Read Bearer token from Authorization header
+        const authHeader = event.headers?.Authorization || event.headers?.authorization;
+        const token = authHeader?.replace("Bearer ", "");
 
         if (!body || !movieID) {
             return {
                 statusCode: 400,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({ message: "Missing body or movie ID" }),
             };
         }
@@ -34,7 +34,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         if (!token) {
             return {
                 statusCode: 401,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({ message: "Login required" }),
             };
         }
@@ -57,7 +57,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         if (!isValidReviewPayload(body)) {
             return {
                 statusCode: 400,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({
                     message: `Incorrect type. Must match the Review schema`,
                     errors: isValidReviewPayload.errors,
@@ -89,7 +89,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
         return {
             statusCode: 200,
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
             body: JSON.stringify({ message: "Review updated" }),
         };
     } catch (error: any) {
@@ -100,14 +100,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         if (error.name === "ConditionalCheckFailedException") {
             return {
                 statusCode: 404,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({ message: "Review not found or you are not authorized to edit it. Please use the 'add review' option." }),
             };
         }
 
         return {
             statusCode: 500,
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
             body: JSON.stringify({ error: error.message }),
         };
     }

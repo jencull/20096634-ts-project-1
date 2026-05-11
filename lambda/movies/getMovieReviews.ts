@@ -22,6 +22,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         if (!movieID) {
             return {
                 statusCode: 400,
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({ message: "Missing movieID" }),
             };
         }
@@ -71,7 +72,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
         return {
             statusCode: 200,
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
             body: JSON.stringify({
                 movieId: movieID,
                 reviewer: reviewer ?? "all",
@@ -82,6 +83,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         console.error(error);
         return {
             statusCode: 500,
+            headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
             body: JSON.stringify({ error: error.message }),
         };
     }

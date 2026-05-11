@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import Ajv from "ajv";
 import schema from "/opt/nodejs/types.schema.json";
 import { Review } from "/opt/nodejs/types";
-import { parseCookies, verifyToken } from "/opt/nodejs/utils";
+import { verifyToken } from "/opt/nodejs/utils";
 
 const ajv = new Ajv();
 const isValidReviewPayload = ajv.compile<Review>(schema.definitions["Review"] || {});
@@ -14,16 +14,17 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     try {
         console.log("[EVENT]", JSON.stringify(event));
 
-        // Setup body and cookies
+        // Read Bearer token from Authorization header (frontend sends Authorization: Bearer <token>)
+        const authHeader = event.headers?.Authorization || event.headers?.authorization;
+        const token = authHeader?.replace("Bearer ", "");
+
         const body = event.body ? JSON.parse(event.body) : undefined;
-        const cookies = parseCookies(event);
-        const token = cookies?.token;
 
         // check body exists
         if (!body) {
             return {
                 statusCode: 400,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({
                     message: "Review not included. Please provide details"
                 }),
@@ -34,7 +35,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         if (!token) {
             return {
                 statusCode: 401,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({ message: "Login required" }),
             };
         }
@@ -57,7 +58,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         if (!isValidReviewPayload(body)) {
             return {
                 statusCode: 400,
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
                 body: JSON.stringify({
                     message: `Review does not match the required format`,
                     schema: schema.definitions["Review"],
@@ -84,7 +85,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
         return {
             statusCode: 201,
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
             body: JSON.stringify({ message: "Review added" }),
         };
 
@@ -92,7 +93,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         console.error(error);
         return {
             statusCode: 500,
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000" },
             body: JSON.stringify({ error: error.message }),
         };
     }
